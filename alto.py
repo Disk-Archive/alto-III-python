@@ -1,6 +1,9 @@
 import ipaddress
+
+import error
 import tcp_connection
 import disk
+import typing
 
 
 class AltoIII(tcp_connection.TcpConnection):
@@ -15,12 +18,20 @@ class AltoIII(tcp_connection.TcpConnection):
         self.disks: [disk.Disk] = []
 
     @property
+    def service_list(self) -> typing.List[str]:
+        """
+            Returns a list of Services on the ALTO III
+        :return:
+        """
+        return self._error_check_list(self._send_tcp("get|service_list"))
+
+    @property
     def system_name(self) -> str:
         """
         Gets the system name
         :return:
         """
-        return self._check_for_alto_errors(self._send_tcp("get|system_name"))
+        return self._error_check(self._send_tcp("get|system_name"))
 
     @system_name.setter
     def system_name(self, system_name: str) -> None:
@@ -28,7 +39,7 @@ class AltoIII(tcp_connection.TcpConnection):
 
     @property
     def system_serial(self) -> str:
-        return self._check_for_alto_errors(self._send_tcp("get|system_serial"))
+        return self._error_check(self._send_tcp("get|system_serial"))
 
     def get_disk_with_free_space(self, file_size: int) -> disk.Disk:
         """

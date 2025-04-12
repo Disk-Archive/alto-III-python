@@ -21,9 +21,8 @@ class TcpConnection(object):
         except Exception as e:
             return f"Error: {e}"
 
-    def _check_for_alto_errors(self, alto_return_string: str) -> str:
-        print(alto_return_string)
-        parts = alto_return_string.split("|")
+    def _error_check(self, alto_result) -> str:
+        parts = alto_result.split("|")
 
         if len(parts) <= 1:
             raise error.AltoException("Unrecognised alto message")
@@ -32,3 +31,14 @@ class TcpConnection(object):
             raise error.AltoException("Alto returned a zero error code")
 
         return " ".join(parts[1:])
+
+    def _error_check_list(self, alto_result) -> typing.List[str]:
+        parts = alto_result.split("|")
+
+        if len(parts) <= 1:
+            raise error.AltoException("Unrecognised alto message")
+
+        if parts[0] == "0":
+            raise error.AltoException("Alto returned a zero error code")
+
+        return parts[1:]

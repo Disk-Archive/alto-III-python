@@ -1,0 +1,4 @@
+
+
+class AltoException(Exception):
+    pass

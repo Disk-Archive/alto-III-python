@@ -7,10 +7,9 @@ import group
 
 
 class AltoIII(tcp_connection.TcpConnection):
-
     """
-        The Alto III object represents an Alto III Head, you can control the
-        Alto operations by instantiating a new Alto III object.
+    The Alto III object represents an Alto III Head, you can control the
+    Alto operations by instantiating a new Alto III object.
     """
 
     def __init__(self, ip_address: ipaddress.IPv4Address, port: int) -> None:
@@ -41,6 +40,14 @@ class AltoIII(tcp_connection.TcpConnection):
     def system_serial(self) -> str:
         return self._error_check(self._send_tcp("get|system_serial"))
 
+    @property
+    def network(self) -> typing.List[str]:
+        return self._error_check_list(self._send_tcp(f"get|network_address"))
+
+    @property
+    def prometheusConfig(self) -> str:
+        return self._error_check(self._send_tcp(f"get|prm_file|prometheus|config"))
+
     def get_disk_with_free_space(self, file_size: int) -> disk.Disk:
         """
             Get a disk with enough free space to contain the given file_size in bytes
@@ -52,7 +59,12 @@ class AltoIII(tcp_connection.TcpConnection):
     def get_disk_by_group(self, group_name: str) -> typing.List[disk.Disk]:
         disks = self._error_check_list(self._send_tcp(f"get|disks|{group_name}"))
         return [
-            disk.Disk(disk_uuid=uuid.UUID(d.split(":")[0]), ip_address=self.ip_address, port=self.port) for d in disks
+            disk.Disk(
+                disk_uuid=uuid.UUID(d.split(":")[0]),
+                ip_address=self.ip_address,
+                port=self.port,
+            )
+            for d in disks
         ]
 
     def get_groups(self) -> typing.List[str]:
@@ -69,6 +81,4 @@ class AltoIII(tcp_connection.TcpConnection):
         """
         # ToDo: The group information needs to be determined and added to the Group Dataclass
         group_info = self._error_check(self._send_tcp(f"get|groupinfo|{group_name}"))
-        return group.Group(
-            name=group_name
-        )
+        return group.Group(name=group_name)

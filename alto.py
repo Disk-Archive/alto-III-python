@@ -48,6 +48,16 @@ class AltoIII(tcp_connection.TcpConnection):
     def prometheusConfig(self) -> str:
         return self._error_check(self._send_tcp(f"get|prm_file|prometheus|config"))
 
+    @property
+    def prometheusDb(self) -> str:
+
+        res = self._send_tcp(f"get|db")
+
+        if res.startswith("<?xml"):
+            return res
+        else:
+            raise ValueError(f"Unexpected response format: {res}")
+
     def get_disk_with_free_space(self, file_size: int) -> disk.Disk:
         """
             Get a disk with enough free space to contain the given file_size in bytes
@@ -82,3 +92,7 @@ class AltoIII(tcp_connection.TcpConnection):
         # ToDo: The group information needs to be determined and added to the Group Dataclass
         group_info = self._error_check(self._send_tcp(f"get|groupinfo|{group_name}"))
         return group.Group(name=group_name)
+
+    def get_smart_data_by_disk_uuid(self, uuid: str) -> str:
+        smart_data = self._error_check(self._send_tcp(f"get|disk_smart_data|{uuid}"))
+        return smart_data
